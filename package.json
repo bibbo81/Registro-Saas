@@ -1,0 +1,24 @@
+{
+  "name": "registro-corrispettivi-supabase",
+  "version": "1.0.0",
+  "description": "Applicazione web per la gestione del registro dei corrispettivi con database Supabase",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "live-server .",
+    "build": "echo 'Nessuna build necessaria per applicazione client-side'"
+  },
+  "keywords": [
+    "registro",
+    "corrispettivi",
+    "contabilità",
+    "supabase",
+    "javascript"
+  ],
+  "author": "Il tuo nome",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}

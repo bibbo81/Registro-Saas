@@ -1,0 +1,120 @@
+diff --git a/index.html b/index.html
+index 2ab212e..f2ea391 100644
+--- a/index.html
++++ b/index.html
+@@ ... @@
+                 </form>
+ 
+                 <!-- Reset Password Form -->
+                 <form id="reset-form" style="display: none;">
+                     <h2 style="color: #4CAF50; margin-bottom: 20px;">🔑 Recupero Password</h2>
+                     
+                     <div class="alert alert-info" style="margin-bottom: 20px; text-align: left;">
+                         <strong>Come funziona:</strong><br>
+                         1. Inserisci la tua email<br>
+                         2. Clicca "Invia Link Recupero"<br>
+                         3. Controlla la tua posta (anche SPAM)<br>
+                         4. Clicca il link nell'email<br>
+                         5. Imposta la nuova password
+                     </div>
+                     
+                     <div class="form-group">
+                         <label for="reset-email">Email per recupero:</label>
+                         <input type="email" id="reset-email" required placeholder="la-tua-email@esempio.com" autocomplete="email">
+                     </div>
+                     
+-                    <button type="submit" class="btn">📧 Invia Link Recupero</button>
++                    <button type="submit" class="btn" id="send-reset-link-btn">📧 Invia Link Recupero</button>
+                     <button type="button" class="btn btn-secondary" id="back-to-login">🔙 Torna al Login</button>
+                     <button type="button" class="btn btn-secondary" onclick="testResetURL()" style="background: #17a2b8;">🧪 Test URL Reset</button>
+                     
+                     <div style="margin-top: 20px; font-size: 14px; color: #666; text-align: left;">
+                         💡 <strong>Configurazione Supabase necessaria:</strong><br>
+                         1. Vai su <strong>Authentication > URL Configuration</strong><br>
+                         2. Aggiungi questo URL in <strong>"Additional Redirect URLs"</strong>:<br>
+                         <code style="background: #f5f5f5; padding: 2px 5px; border-radius: 3px; font-size: 12px; word-break: break-all;" id="current-url-display"></code><br>
+                         3. Salva le impostazioni
+                     </div>
+                 </form>
+ 
+                 <!-- Update Password Form -->
+@@ ... @@
+                 <div id="auth-message"></div>
+                 
+                 <button class="btn btn-small" style="background: #dc3545; margin-top: 20px;" onclick="clearAllData()">🗑️ Reset Completo</button>
++
++                <hr style="margin: 24px 0;">
++                <button type="button" class="btn btn-secondary" id="magic-link-btn">✉️ Login con Magic Link</button>
++
+             </div>
+         </div>
+ 
+@@ ... @@
+         document.addEventListener('DOMContentLoaded', function() {
+@@ ... @@
+             // Registrazione
+@@ ... @@
+             document.getElementById('forgot-password-btn')?.addEventListener('click', () => {
+                 showResetPasswordForm();
+             });
+             
+             document.getElementById('back-to-login')?.addEventListener('click', () => {
+                 showLoginForm();
+             });
++
++            // --- LOGIN MAGIC LINK ---
++            const magicLinkBtn = document.getElementById('magic-link-btn');
++            if (magicLinkBtn) {
++                magicLinkBtn.addEventListener('click', async () => {
++                    const emailInput = document.getElementById('email');
++                    const messageDiv = document.getElementById('auth-message');
++                    const email = emailInput.value;
++                    if (!email) {
++                        showMessage(messageDiv, 'Inserisci una email per ricevere il magic link!', 'error');
++                        return;
++                    }
++                    showLoading(true);
++                    try {
++                        const { error } = await supabaseClient.auth.signInWithOtp({
++                            email: email.trim(),
++                            options: {
++                                emailRedirectTo: window.location.origin + '/'
++                            }
++                        });
++                        if (error) throw error;
++                        showMessage(messageDiv, '✅ Magic link inviato! Controlla la tua email.', 'success');
++                    } catch (error) {
++                        showMessage(messageDiv, error.message, 'error');
++                    } finally {
++                        showLoading(false);
++                    }
++                });
++            }
++
++            // --- RESET PASSWORD PATCH ---
++            const resetForm = document.getElementById('reset-form');
++            if (resetForm) {
++                resetForm.addEventListener('submit', async (e) => {
++                    e.preventDefault();
++                    const emailInput = document.getElementById('reset-email');
++                    const email = emailInput.value;
++                    const messageDiv = document.getElementById('auth-message');
++                    if (!email) {
++                        showMessage(messageDiv, 'Inserisci una email per il reset!', 'error');
++                        return;
++                    }
++                    showLoading(true);
++                    try {
++                        const { error } = await supabaseClient.auth.resetPasswordForEmail(email.trim(), {
++                            redirectTo: window.location.origin + '/?mode=reset-password'
++                        });
++                        if (error) throw error;
++                        showMessage(messageDiv, '✅ Email per il reset inviata! Controlla la tua posta.', 'success');
++                    } catch (error) {
++                        showMessage(messageDiv, error.message, 'error');
++                    } finally {
++                        showLoading(false);
++                    }
++                });
++            }
+         });
