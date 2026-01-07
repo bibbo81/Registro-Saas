@@ -147,9 +147,9 @@ class RegistroApp {
             </div>
         `;
         // Rimuovi eventuali attributi onclick residui dal DOM
-        setTimeout(() => {
-            app.querySelectorAll('[onclick]').forEach(el => el.removeAttribute('onclick'));
-        }, 0);
+        // setTimeout(() => {
+        //     app.querySelectorAll('[onclick]').forEach(el => el.removeAttribute('onclick'));
+        // }, 0);
 
         // Event binding DOPO che l'HTML è stato inserito
         document.getElementById('logout-btn')?.addEventListener('click', () => this.logout());
@@ -164,12 +164,36 @@ class RegistroApp {
             });
         });
     }
+    async changeYear(year) {
+        console.log(`📅 Cambio anno a: ${year}`);
+        this.currentYear = parseInt(year);
+        localStorage.setItem('selectedYear', this.currentYear);
+        
+        // Aggiorna giorni per mese per il nuovo anno
+        if (typeof getGiorniPerMese === 'function') {
+            this.giorniPerMese = getGiorniPerMese(this.currentYear);
+        }
+        
+        try {
+            this.showLoading(true);
+            this.initializeDataStructure();
+            await this.loadUserData();
+            this.renderApp();
+            this.showTab('dashboard');
+        } catch (error) {
+            console.error('Errore nel cambio anno:', error);
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
     generateYearOptions() {
         const currentYear = new Date().getFullYear();
         let options = '';
         for (let year = currentYear - 5; year <= currentYear + 1; year++) {
             options += `<option value="${year}" ${year === this.currentYear ? 'selected' : ''}>${year}</option>`;
         }
+        options += '<option value="custom">➕ Aggiungi altro anno...</option>';
         return options;
     }
 

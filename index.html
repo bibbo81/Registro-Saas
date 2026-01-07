@@ -1325,7 +1325,43 @@
             `;
         }
 
-                // === GENERA OPZIONI ANNO ===
+                // === CAMBIO ANNO ===
+        async function changeYear(year) {
+            if (year === 'custom') {
+                const customYear = prompt('Inserisci l\'anno desiderato (es. 2023):');
+                if (customYear && !isNaN(customYear) && customYear.length === 4) {
+                    year = parseInt(customYear);
+                } else {
+                    renderApp(); // Reset dropdown
+                    return;
+                }
+            } else {
+                year = parseInt(year);
+            }
+
+            console.log(`📅 Cambio anno a: ${year}`);
+            currentYear = year;
+            localStorage.setItem('selectedYear', currentYear);
+            
+            // Aggiorna giorni per mese per il nuovo anno
+            giorniPerMese = getGiorniPerMese(currentYear);
+            
+            showLoading(true);
+            try {
+                initializeDataStructure();
+                await loadUserData();
+                renderApp();
+                showTab('dashboard');
+                showAlert(`Anno impostato su ${currentYear}`, 'success');
+            } catch (error) {
+                console.error('Errore nel cambio anno:', error);
+                showAlert('Errore nel cambio anno', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // === GENERA OPZIONI ANNO ===
         function generateYearOptions() {
             const currentDate = new Date();
             const currentYearNow = currentDate.getFullYear();
